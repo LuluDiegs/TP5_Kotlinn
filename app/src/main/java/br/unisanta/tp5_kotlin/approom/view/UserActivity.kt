@@ -2,17 +2,13 @@ package br.unisanta.tp5_kotlin.approom.view
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
-import br.unisanta.approom.R
-import br.unisanta.approom.databinding.ActivityUserBinding
+import br.unisanta.tp5_kotlin.approom.controller.UserController
 import br.unisanta.tp5_kotlin.approom.dao.UserDao
 import br.unisanta.tp5_kotlin.approom.db.AppDatabase
 import br.unisanta.tp5_kotlin.approom.model.User
+import br.unisanta.usuario_sqlroom.databinding.ActivityUserBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,86 +16,69 @@ import kotlinx.coroutines.withContext
 class UserActivity : AppCompatActivity() {
     private lateinit var binding: ActivityUserBinding
     private lateinit var userDao: UserDao
-    private var user: User? = null
+    private lateinit var userController: UserController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
         binding = ActivityUserBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        val db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java,
-            "db-user"
-        ).fallbackToDestructiveMigration()
-            .build()
-
+        val db = AppDatabase.getDatabase(applicationContext)
         userDao = db.userDao()
+        userController = UserController(userDao)
 
-        val uid = intent.getLongExtra("uid", -1L)
-        if (uid == -1L) {
-            Toast.makeText(this, "Usuário inválido", Toast.LENGTH_SHORT).show()
-            finish()
+        binding.btnRegister.setOnClickListener {
+            registerUser()
+        }
+    }
+    private fun registerUser() {
+        val email = binding.edtRegisterEmail.text.toString().trim()
+        val senha = binding.edtRegisterSenha.text.toString().trim()
+        val nome = binding.edtRegisterNome.text.toString().trim()
+        val idadeStr = binding.edtRegisterIdade.text.toString().trim()
+        val telefoneStr = binding.edtRegisterTelefone.text.toString().trim()
+        val curso = binding.edtRegisterCurso.text.toString().trim()
+
+        if (email.isBlank() || senha.isBlank() || nome.isBlank() || idadeStr.isBlank() || telefoneStr.isBlank() || curso.isBlank()) {
+            Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
             return
         }
 
+        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+        if (!email.matches(emailRegex)) {
+            Toast.makeText(this, "Informe um email válido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val idade = idadeStr.toIntOrNull()
+        if (idade == null) {
+            Toast.makeText(this, "Idade inválida", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val telefoneRegex = Regex("^\\d{11}\$")
+        if (!telefoneStr.matches(telefoneRegex)) {
+            Toast.makeText(this, "Telefone deve ter 11 números", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val telefone = telefoneStr.toLong()
+
+        val newUser = User(
+            uid = 0,
+            email = email,
+            password = senha,
+            name = nome,
+            idade = idade,
+            telefone = telefone,
+            curso = curso
+        )
+
         lifecycleScope.launch {
-            user = withContext(Dispatchers.IO) {
-                userDao.getByUid(uid)
+            withContext(Dispatchers.IO) {
+                userController.registerUser(newUser)
             }
-
-            if (user == null) {
-                Toast.makeText(this@UserActivity, "Usuário não encontrado", Toast.LENGTH_SHORT).show()
-                finish()
-                return@launch
-            }
-
-            binding.edtProfileName.setText(user!!.name)
-            binding.edtProfileEmail.setText(user!!.email)
-            binding.edtProfileSenha.setText(user!!.password)
-        }
-
-        binding.btnUpdate.setOnClickListener {
-            lifecycleScope.launch {
-                user?.let {
-                    val updatedUser = it.copy(
-                        name = binding.edtProfileName.text.toString(),
-                        email = binding.edtProfileEmail.text.toString(),
-                        password = binding.edtProfileSenha.text.toString()
-                    )
-
-                    withContext(Dispatchers.IO) {
-                        userDao.update(updatedUser)
-
-                    }
-                    Toast.makeText(this@UserActivity, "Usuário atualizado", Toast.LENGTH_SHORT).show()
-                }
-                    ?:
-                    Toast.makeText(this@UserActivity, "Usuário inválido", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        binding.btnDelete.setOnClickListener {
-            lifecycleScope.launch {
-                user?.let {
-                    withContext(Dispatchers.IO) {
-                        userDao.delete(it)
-                    }
-
-                    Toast.makeText(this@UserActivity, "Usuário excluído", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-                    ?:
-                    Toast.makeText(this@UserActivity, "Usuário inválido", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(this@UserActivity, "Usuário cadastrado com sucesso!", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 }

@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "br.unisanta.approom"
+    namespace = "br.unisanta.usuario_sqlroom"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "br.unisanta.approom"
+        applicationId = "br.unisanta.usuario_sqlroom"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -27,24 +27,31 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         viewBinding = true
     }
+
+    buildToolsVersion = "36.0.0"
 }
 
 dependencies {
     val room_version = "2.6.1"
+
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

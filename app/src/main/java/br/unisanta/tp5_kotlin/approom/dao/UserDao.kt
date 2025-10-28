@@ -11,18 +11,21 @@ import br.unisanta.tp5_kotlin.approom.model.User
 
 @Dao
 interface UserDao {
-    @Query("SELECT * FROM User WHERE email = :email AND password = :password")
+    @Query("SELECT * FROM user")
+    fun getAll():List<User>
+
+    @Query("SELECT * FROM user WHERE email = :email AND password = :password")
     suspend fun login(email: String, password: String): User?
 
-    @Query("SELECT * FROM User WHERE uid = :uid LIMIT 1")
-    fun getByUid(uid: Long): User?
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(user: User): Long
+    @Query("SELECT * FROM user WHERE uid = :uid")
+    suspend fun getUserById(uid: Int): User?
 
     @Update
     suspend fun update(user: User)
 
+    @Insert
+    suspend fun insertUser(vararg user:User)
+
     @Delete
-    suspend fun delete(user: User)
+    suspend fun deleteUser(user: User)
 }

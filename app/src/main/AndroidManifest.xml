@@ -12,9 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TP5_Kotlin">
         <activity
-            android:name="br.unisanta.tp5_kotlin.approom.view.UserActivity"
-            android:exported="false" />
-        <activity
             android:name="br.unisanta.tp5_kotlin.approom.view.MainActivity"
             android:exported="true">
             <intent-filter>
@@ -23,6 +20,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="br.unisanta.tp5_kotlin.approom.view.LoginActivity" />
+        <activity android:name="br.unisanta.tp5_kotlin.approom.view.UserActivity" />
+        <activity android:name="br.unisanta.tp5_kotlin.approom.view.ProfileActivity" />
     </application>
 
 </manifest>

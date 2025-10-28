@@ -17,5 +17,16 @@ data class User(
     val email: String = "",
 
     @ColumnInfo
-    val password: String = ""
+    val password: String = "",
+
+    @ColumnInfo
+    val curso:String,
+
+    @ColumnInfo
+    val idade:Int,
+
+    @ColumnInfo
+    val telefone:Long,
+
+
 )
